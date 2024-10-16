@@ -1,0 +1,72 @@
+---
+
+---
+
+<input type="file" id="file-upload" accept=".zip" />
+<div id="status"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+<script>
+  document.getElementById('file-upload').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.textContent = 'Processing...';
+      
+      // Extract the ZIP file using JSZip
+      JSZip.loadAsync(file).then(zip => {
+        return zip.file('user.json').async('text').then(userJson => {
+          // Handle user.json
+          const userData = JSON.parse(userJson);
+          const email = userData.email;
+          const userId = userData.id;
+          
+          // Confirm user identity (simple prompt for now)
+          const inputEmail = prompt('Please confirm your email', email);
+          if (inputEmail === email) {
+            statusDiv.textContent = 'Email confirmed. Loading chats...';
+
+            // Load and process conversations.json
+            zip.file('conversations.json').async('text').then(convJson => {
+              const conversations = JSON.parse(convJson);
+              processConversations(conversations, userId);
+            });
+          } else {
+            statusDiv.textContent = 'Email did not match.';
+          }
+        });
+      }).catch(err => {
+        statusDiv.textContent = 'Error loading ZIP: ' + err.message;
+      });
+    }
+  });
+
+  function processConversations(conversations, userId) {
+  const processedConversations = conversations.map(conv => {
+    return {
+      title: conv.title,
+      createTime: new Date(conv.create_time * 1000).toLocaleString(),
+      messages: Object.values(conv.mapping).map(map => {
+        const message = map.message;
+        let author = message.author.role;
+        
+        // Replace 'user' with 'you'
+        if (author === 'user') author = 'you';
+
+        // Format message content
+        const content = message.content.parts.join(' ');
+
+        return {
+          author,
+          content,
+          timestamp: new Date(message.create_time * 1000).toLocaleString(),
+        };
+      })
+    };
+  });
+
+  displayConversations(processedConversations);
+}
+
+  
+</script>

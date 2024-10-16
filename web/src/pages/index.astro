@@ -1,0 +1,22 @@
+---
+// src/pages/index.astro
+import Layout from "../layouts/Layout.astro"
+import ChatLoader from '../components/ChatLoader.jsx';
+
+---
+<html lang="en"></html>
+<Layout title="Chat Conversations" desc="ChatGPT">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Conversations</title>
+    <link rel="stylesheet" href="/css/global.css" />
+  </head>
+  <body>
+    <h1>Chat Conversations</h1>
+    
+    <!-- React component hydrated here -->
+    <ChatLoader client:load />
+  </body>
+</Layout>
+</html>
